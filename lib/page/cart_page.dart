@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-12-23 20:58:54
- * @LastEditTime: 2021-01-04 14:32:21
+ * @LastEditTime: 2021-01-06 16:06:26
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /flutter/udemy_flutter_sec8/lib/page/cart_page.dart
@@ -74,29 +74,64 @@ class CartPage extends StatelessWidget {
             ),
           ),
           Container(
-            margin: EdgeInsets.fromLTRB(0, 0, 15, 0),
-            child: RaisedButton(
-              child: Text(
-                'order now',
-                style: TextStyle(
-                  fontSize: 22,
-                ),
-              ),
-              onPressed: () {
-                //listen to Order
-                Provider.of<Order>(context, listen: false).addOrder(
-                  cart.items.values.toList(),
-                  cart.totalAmount,
-                );
-                //once create the order, then clear the cart
-                cart.clear();
-              },
-              color: Theme.of(context).primaryColor,
-              textColor: Colors.white,
-            ),
+            alignment: Alignment.center,
+            margin: EdgeInsets.fromLTRB(0, 0, 0, 15),
+            child: OrderButton(cart: cart),
           ),
         ],
       ),
+    );
+  }
+}
+
+class OrderButton extends StatefulWidget {
+  const OrderButton({
+    Key key,
+    @required this.cart,
+  }) : super(key: key);
+
+  final Cart cart;
+
+  @override
+  _OrderButtonState createState() => _OrderButtonState();
+}
+
+class _OrderButtonState extends State<OrderButton> {
+  //控制当点击order now按钮后，在处理数据的过程中显示loading page
+  var _isLoading = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return RaisedButton(
+      child: _isLoading
+          ? CircularProgressIndicator()
+          : Text(
+              'order now',
+              style: TextStyle(
+                fontSize: 22,
+              ),
+            ),
+      //如果订单的金额小于等于0或者正在处理订单过程中（上传数据）则按钮呈灰色
+      onPressed: (widget.cart.totalAmount <= 0 || _isLoading == true)
+          ? null
+          : () async {
+              setState(() {
+                _isLoading = true;
+              });
+              //listen to Order
+              await Provider.of<Order>(context, listen: false).addOrder(
+                widget.cart.items.values.toList(),
+                widget.cart.totalAmount,
+              );
+              //数据提交数据库完成后不再显示loading page
+              setState(() {
+                _isLoading = false;
+              });
+              //once create the order, then clear the cart
+              widget.cart.clear();
+            },
+      color: Theme.of(context).primaryColor,
+      textColor: Colors.white,
     );
   }
 }

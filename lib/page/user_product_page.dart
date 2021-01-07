@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-04 15:46:48
- * @LastEditTime: 2021-01-05 14:28:07
+ * @LastEditTime: 2021-01-06 16:53:40
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /flutter/udemy_flutter_sec9/lib/page/user_product_page.dart
@@ -22,6 +22,12 @@ class UserProductPage extends StatelessWidget {
     //用provider获取并监听products对象(在product_porvider.dart)
     final productsData = Provider.of<Products>(context);
 
+    //刷新功能函数
+    Future<void> _refresh(BuildContext ctx) async {
+      //因为此widget是stateless，所以需要传递BuildContext
+      await Provider.of<Products>(ctx, listen: false).fetchProducts();
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Your Products'),
@@ -33,23 +39,26 @@ class UserProductPage extends StatelessWidget {
               Navigator.of(context).pushNamed(AddProductPage.routeName);
             },
           ),
-          //删除，修改...
         ],
       ),
       drawer: AppDrawer(),
-      body: Padding(
-        padding: EdgeInsets.all(8),
-        child: ListView.builder(
-          itemCount: productsData.items.length,
-          itemBuilder: (_, index) => Column(
-            children: [
-              UserProductItem(
-                title: productsData.items[index].title,
-                imageURL: productsData.items[index].imageUrl,
-                id: productsData.items[index].id,
-              ),
-              Divider(),
-            ],
+      body: RefreshIndicator(
+        //实现下拉加载刷新功能
+        onRefresh: () => _refresh(context),
+        child: Padding(
+          padding: EdgeInsets.all(8),
+          child: ListView.builder(
+            itemCount: productsData.items.length,
+            itemBuilder: (_, index) => Column(
+              children: [
+                UserProductItem(
+                  title: productsData.items[index].title,
+                  imageURL: productsData.items[index].imageUrl,
+                  id: productsData.items[index].id,
+                ),
+                Divider(),
+              ],
+            ),
           ),
         ),
       ),

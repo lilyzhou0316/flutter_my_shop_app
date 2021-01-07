@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-04 15:56:14
- * @LastEditTime: 2021-01-05 15:14:46
+ * @LastEditTime: 2021-01-06 14:53:55
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /flutter/udemy_flutter_sec9/lib/widget/user_product_item.dart
@@ -21,6 +21,10 @@ class UserProductItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    //在下面delete的try-catch里不能直接使用ScaffoldMessenger.of(context)
+    //因为这里的context很有可能已经指向的不是同一个widget了（已经刷新了）
+    //所以需要在这里直接获取最初的context
+    final scaffold = ScaffoldMessenger.of(context);
     return ListTile(
       title: Text(title),
       leading: CircleAvatar(
@@ -43,9 +47,18 @@ class UserProductItem extends StatelessWidget {
             ),
             IconButton(
               icon: Icon(Icons.delete),
-              onPressed: () {
+              onPressed: () async {
                 //delete
-                Provider.of<Products>(context, listen: false).deleteProduct(id);
+                try {
+                  await Provider.of<Products>(context, listen: false)
+                      .deleteProduct(id);
+                } catch (err) {
+                  scaffold.showSnackBar(
+                    SnackBar(
+                      content: Text('Deleting failed!'),
+                    ),
+                  );
+                }
               },
               color: Theme.of(context).errorColor,
             ),
