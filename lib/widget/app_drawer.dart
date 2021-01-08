@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-04 14:06:34
- * @LastEditTime: 2021-01-07 20:14:20
+ * @LastEditTime: 2021-01-08 14:33:35
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /flutter/udemy_flutter_sec8/lib/widget/app_drawer.dart
@@ -12,6 +12,7 @@ import 'package:provider/provider.dart';
 import '../page/order_page.dart';
 import '../page/user_product_page.dart';
 import '../provider/auth.dart';
+import '../helper/custom_route.dart';
 
 class AppDrawer extends StatelessWidget {
   @override
@@ -31,6 +32,9 @@ class AppDrawer extends StatelessWidget {
             title: Text('Orders'),
             onTap: () {
               Navigator.of(context).pushReplacementNamed(OrderPage.routeName);
+              //给order page加上自定义动画效果
+              // Navigator.of(context)
+              //     .pushReplacement(CustomRoute(builder: (ctx) => OrderPage()));
             },
           ),
           Divider(),

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-12-23 14:54:40
- * @LastEditTime: 2021-01-07 15:25:09
+ * @LastEditTime: 2021-01-08 14:03:24
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /flutter/udemy_flutter_sec8/lib/widget/product_item.dart
@@ -35,9 +35,13 @@ class ProductItem extends StatelessWidget {
               arguments: product.id,
             );
           },
-          child: Image.network(
-            product.imageUrl,
-            fit: BoxFit.cover,
+          child: Hero(
+            tag: product.id,
+            child: FadeInImage(
+              placeholder: AssetImage('assets/images/product-placeholder.png'),
+              image: NetworkImage(product.imageUrl),
+              fit: BoxFit.cover,
+            ),
           ),
         ),
         footer: GridTileBar(

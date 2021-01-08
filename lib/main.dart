@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-04 14:54:53
- * @LastEditTime: 2021-01-07 19:34:48
+ * @LastEditTime: 2021-01-08 14:42:47
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /flutter/udemy_flutter_sec9/lib/main.dart
@@ -22,6 +22,7 @@ import './page/add_product_page.dart';
 import './page/edit_product_page.dart';
 import './page/auth_page.dart';
 import './page/splash_screen.dart';
+import 'helper/custom_route.dart';
 
 void main() {
   runApp(MyApp());
@@ -64,6 +65,13 @@ class MyApp extends StatelessWidget {
               primarySwatch: Colors.blueGrey,
               accentColor: Colors.red,
               fontFamily: 'Raleway',
+              //改变所有页面加载效果
+              pageTransitionsTheme: PageTransitionsTheme(
+                builders: {
+                  TargetPlatform.android: CustomPageTransitionBuilder(),
+                  TargetPlatform.iOS: CustomPageTransitionBuilder(),
+                },
+              ),
             ),
             //home页面根据用户是否登入来判断显示哪个
             home: auth.isAuth
