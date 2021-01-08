@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-01-04 12:56:16
- * @LastEditTime: 2021-01-06 16:26:03
+ * @LastEditTime: 2021-01-07 18:42:58
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /flutter/udemy_flutter_sec8/lib/provider/order.dart
@@ -28,6 +28,10 @@ class OrderItem {
 
 class Order with ChangeNotifier {
   List<OrderItem> _orders = [];
+  final String authToken;
+  final String userId; //根据不同用户显示用户自己的orders
+
+  Order(this.authToken, this.userId, this._orders);
 
   List<OrderItem> get orders {
     return [..._orders];
@@ -35,8 +39,8 @@ class Order with ChangeNotifier {
 
   Future<void> addOrder(List<CartItem> cartProducts, double total) async {
     //将新增order保存在数据库中
-    const url =
-        'https://flutter-my-shop-app-6a2d3-default-rtdb.firebaseio.com/orders.json';
+    final url =
+        'https://flutter-my-shop-app-6a2d3-default-rtdb.firebaseio.com/orders/$userId.json?auth=$authToken';
     final timestamp = DateTime.now();
 
     final response = await http.post(
@@ -72,8 +76,8 @@ class Order with ChangeNotifier {
 
   Future<void> fetchOrders() async {
     //从数据库中获取已存在的order
-    const url =
-        'https://flutter-my-shop-app-6a2d3-default-rtdb.firebaseio.com/orders.json';
+    final url =
+        'https://flutter-my-shop-app-6a2d3-default-rtdb.firebaseio.com/orders/$userId.json?auth=$authToken';
     try {
       final response = await http.get(url);
       final data =
@@ -107,7 +111,7 @@ class Order with ChangeNotifier {
       _orders = orderList;
       notifyListeners();
     } catch (error) {
-      throw error;
+      //throw error;
     }
   }
 }

@@ -1,15 +1,17 @@
 /*
  * @Author: your name
  * @Date: 2021-01-04 14:06:34
- * @LastEditTime: 2021-01-04 16:10:28
+ * @LastEditTime: 2021-01-07 20:14:20
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /flutter/udemy_flutter_sec8/lib/widget/app_drawer.dart
  */
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../page/order_page.dart';
 import '../page/user_product_page.dart';
+import '../provider/auth.dart';
 
 class AppDrawer extends StatelessWidget {
   @override
@@ -50,6 +52,18 @@ class AppDrawer extends StatelessWidget {
             onTap: () {
               Navigator.of(context)
                   .pushReplacementNamed(UserProductPage.routeName);
+            },
+          ),
+          Divider(),
+          ListTile(
+            leading: Icon(
+              Icons.exit_to_app,
+            ),
+            title: Text('Log out'),
+            onTap: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).pushReplacementNamed('/');
+              Provider.of<Auth>(context, listen: false).logout();
             },
           ),
         ],

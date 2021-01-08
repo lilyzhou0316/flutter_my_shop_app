@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-12-23 14:37:03
- * @LastEditTime: 2021-01-06 16:57:16
+ * @LastEditTime: 2021-01-07 16:24:44
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /flutter/udemy_flutter_sec8/lib/page/products_page.dart
@@ -22,6 +22,7 @@ enum FilterOptions {
 }
 
 class ProductsOverviewPage extends StatefulWidget {
+  static const routeName = '/products_overview_page';
   @override
   _ProductsOverviewPageState createState() => _ProductsOverviewPageState();
 }
@@ -63,6 +64,8 @@ class _ProductsOverviewPageState extends State<ProductsOverviewPage> {
           //在数据都获取完成后不再显示loading页面（即获取过程中一直显示loading）
           _isLoading = false;
         });
+      }).catchError((err) {
+        print(err);
       });
     }
     _isInit = false;

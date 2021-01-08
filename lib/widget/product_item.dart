@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-12-23 14:54:40
- * @LastEditTime: 2021-01-04 15:35:19
+ * @LastEditTime: 2021-01-07 15:25:09
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /flutter/udemy_flutter_sec8/lib/widget/product_item.dart
@@ -13,12 +13,14 @@ import 'package:provider/provider.dart';
 import '../page/product_detail_page.dart';
 import '../provider/product.dart';
 import '../provider/cart.dart';
+import '../provider/auth.dart';
 
 class ProductItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final product = Provider.of<Product>(context, listen: false);
     final cart = Provider.of<Cart>(context, listen: false);
+    final authData = Provider.of<Auth>(context, listen: false);
     //another way to set listener to product provider is using Consumer
 
     return ClipRRect(
@@ -51,7 +53,8 @@ class ProductItem extends StatelessWidget {
               ),
               color: Theme.of(context).accentColor,
               onPressed: () {
-                product.toggleFavorite();
+                //传递token给product.dart
+                product.toggleFavorite(authData.token, authData.userId);
               },
             ),
           ),

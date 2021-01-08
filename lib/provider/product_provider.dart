@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-12-23 16:13:40
- * @LastEditTime: 2021-01-06 16:26:51
+ * @LastEditTime: 2021-01-07 17:28:41
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /flutter/udemy_flutter_sec8/lib/provider/product_provider.dart
@@ -24,43 +24,12 @@ class Products with ChangeNotifier {
     //   imageUrl:
     //       'https://cdn.pixabay.com/photo/2016/10/02/22/17/red-t-shirt-1710578_1280.jpg',
     // ),
-    // Product(
-    //   id: 'p2',
-    //   title: 'Trousers',
-    //   description: 'A nice pair of trousers.',
-    //   price: 59.99,
-    //   imageUrl:
-    //       'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Trousers%2C_dress_%28AM_1960.022-8%29.jpg/512px-Trousers%2C_dress_%28AM_1960.022-8%29.jpg',
-    // ),
-    // Product(
-    //   id: 'p3',
-    //   title: 'Yellow Scarf',
-    //   description: 'Warm and cozy - exactly what you need for the winter.',
-    //   price: 19.99,
-    //   imageUrl:
-    //       'https://live.staticflickr.com/4043/4438260868_cc79b3369d_z.jpg',
-    // ),
-    // Product(
-    //   id: 'p4',
-    //   title: 'A Pan',
-    //   description: 'Prepare any meal you want.',
-    //   price: 49.99,
-    //   imageUrl:
-    //       'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Cast-Iron-Pan.jpg/1024px-Cast-Iron-Pan.jpg',
-    // ),
   ]; //it will be changed, so it is not final
 
-  //var _showFavoritesOnly = false;
-
-  // void showFavoritesOnly() {
-  //   _showFavoritesOnly = true;
-  //   notifyListeners();
-  // }
-
-  // void showAll() {
-  //   _showFavoritesOnly = false;
-  //   notifyListeners();
-  // }
+//接受从auth.dart传过来的token(在main.dart里实现)
+  final String authToken;
+  final String userId;
+  Products(this.authToken, this.userId, this._items);
 
   List<Product> get items {
     //we cannot return _items directly, because then we can
@@ -72,19 +41,35 @@ class Products with ChangeNotifier {
     return _items.where((pro) => pro.isFavorite).toList();
   }
 
-  Future<void> fetchProducts() async {
+//[bool filterByUser = false]代表如果没有传入filterByUser值，则默认为false
+  Future<void> fetchProducts([bool filterByUser = false]) async {
     //用http.get（）从firebase中获取已存在的商品data
-    const url =
-        'https://flutter-my-shop-app-6a2d3-default-rtdb.firebaseio.com/products.json';
+    //根据指定的用户id只加载该用户创建的商品
+    //注意：firebase需要在database rules里指定需要操作的index，如下：
+    // "products":{
+    //    ".indexOn":["creator"]
+    // }
+    //用filterString来控制是否使用filterByUser
+    final filterString =
+        filterByUser ? 'orderBy="creator"&equalTo="$userId"' : '';
+    final urlProducts =
+        'https://flutter-my-shop-app-6a2d3-default-rtdb.firebaseio.com/products.json?auth=$authToken&$filterString';
     try {
-      final response = await http.get(url);
+      final response = await http.get(urlProducts);
       final data =
           json.decode(response.body) as Map<String, dynamic>; //map of all data
       final List<Product> proList = []; //保存从数据库中取出的所有商品
+
       //先检查数据库中是否有商品
       if (data == null) {
         return;
       }
+      //从数据库中得到当前登录的用户的每个商品的favorite信息
+      final urlFavorite =
+          'https://flutter-my-shop-app-6a2d3-default-rtdb.firebaseio.com/userFavorites/$userId.json?auth=$authToken';
+      final favoriteResponse = await http.get(urlFavorite);
+      final favoriteData = json.decode(favoriteResponse.body);
+
       //data里的每一个key都是一个商品的id，每一个value都是该商品的信息（也是map格式）
       data.forEach((id, info) {
         proList.insert(
@@ -95,22 +80,28 @@ class Products with ChangeNotifier {
             imageUrl: info['imageURL'],
             price: info['price'],
             title: info['title'],
-            isFavorite: info['isFavorite'],
+            //根据商品id找到该用户对应的商品的favorite信息
+            //如果当前用户没有favorite商品，则所有商品的favorite都为false
+            //但是即使favoriteData不为null,指定的id找到的商品也有可能不存在
+            //用??如果对应的商品不存在，则返回false,否则返回它自己的值
+            isFavorite:
+                favoriteData == null ? false : favoriteData[id] ?? false,
           ),
         );
       });
+
       _items = proList;
       notifyListeners();
     } catch (error) {
-      throw error;
+      //print(error);
     }
   }
 
   Future<void> addProduct(Product product) async {
     //用http.post（）向firebase中添加新商品数据
     //url为创建的firebase的realtime database的链接 + collection名 + .json（json为firebase特有）
-    const url =
-        'https://flutter-my-shop-app-6a2d3-default-rtdb.firebaseio.com/products.json';
+    final url =
+        'https://flutter-my-shop-app-6a2d3-default-rtdb.firebaseio.com/products.json?auth=$authToken';
 
     //用try-catch处理error
     try {
@@ -124,7 +115,10 @@ class Products with ChangeNotifier {
           'description': product.description,
           'imageURL': product.imageUrl,
           'price': product.price,
-          'isFavorite': product.isFavorite,
+          //给每个商品加上它的创建者id，这样在编辑修改商品时，用户就只能修改自己创建的商品
+          //避免修改了其他用户上传的商品
+          'creator': userId,
+          //'isFavorite': product.isFavorite,
         }),
       );
 
@@ -171,7 +165,7 @@ class Products with ChangeNotifier {
     if (productIndex >= 0) {
       //用http.patch()更新数据库中指定商品(根据传入id)的信息
       final url =
-          'https://flutter-my-shop-app-6a2d3-default-rtdb.firebaseio.com/products/$id.json';
+          'https://flutter-my-shop-app-6a2d3-default-rtdb.firebaseio.com/products/$id.json?auth=$authToken';
       await http.patch(
         url,
         body: json.encode({
@@ -191,7 +185,7 @@ class Products with ChangeNotifier {
 
   Future<void> deleteProduct(String id) async {
     final url =
-        'https://flutter-my-shop-app-6a2d3-default-rtdb.firebaseio.com/products/$id.json';
+        'https://flutter-my-shop-app-6a2d3-default-rtdb.firebaseio.com/products/$id.json?auth=$authToken';
 
 //先找到该商品在list中的index
 //注意：这里用existingPro指向了被删除对象，它就暂时不会被GC回收

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-12-23 14:38:34
- * @LastEditTime: 2021-01-06 15:14:08
+ * @LastEditTime: 2021-01-07 16:56:24
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /flutter/udemy_flutter_sec8/lib/model/product.dart
@@ -27,21 +27,27 @@ class Product with ChangeNotifier {
     this.isFavorite = false,
   });
 
-  Future<void> toggleFavorite() async {
+  Future<void> toggleFavorite(String token, String userId) async {
+//传递userId，则每个用户只看到自己的favorites
+
     //用http将指定id的商品的isFavorite值保存到数据库中
     final url =
-        'https://flutter-my-shop-app-6a2d3-default-rtdb.firebaseio.com/products/$id.json';
+        'https://flutter-my-shop-app-6a2d3-default-rtdb.firebaseio.com/userFavorites/$userId/$id.json?auth=$token';
 
     final oldStatus = isFavorite; //用于防止更新失败时回滚到之前的值
     //先更新在list中的值
     isFavorite = !isFavorite;
     notifyListeners();
     //然后更新在数据库中的值
+    print('imply http.put');
     try {
-      final response = await http.patch(
+      final response = await http.put(
         url,
-        body: json.encode({'isFavorite': isFavorite}),
+        body: json.encode(
+          isFavorite,
+        ),
       );
+      print('finish http.put');
       if (response.statusCode >= 400) {
         //更新数据库失败，则把list中对应的值回滚到之前的值
         isFavorite = oldStatus;
